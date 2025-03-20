@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>XKeen Config Generator by BlancVPN</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
+
+    /* Темная тема (по умолчанию) */
+    :root {
+      --bg-color: #121212;
+      --text-color: #ffffff;
+      --secondary-bg-color: #1e1e1e;
+      --button-bg-color: #007bff;
+      --button-bg-hover: #0056b3;
+      --warning-color: #ff5555; /* Для ошибок */
+      --code-bg-color: #2d2d2d;
+      --code-text-color: #00ff8c;
+      --success-color: #28a745; /* зелёный для успешных уведомлений */
+    }
+
+    /* Светлая тема */
+    :root.light {
+      --bg-color: #ffffff;
+      --text-color: #000000;
+      --secondary-bg-color: #f5f5f5;
+      --button-bg-color: #007bff;
+      --button-bg-hover: #0056b3;
+      --warning-color: #ff5555;
+      --code-bg-color: #eaeaea;
+      --code-text-color: #333333;
+      --success-color: #28a745; 
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    /* Заголовок со ссылкой */
+    #main-title {
+      text-align: center;
+      font-size: 2rem;
+      margin-bottom: 10px;
+    }
+    #main-title a {
+      color: var(--text-color);
+      text-decoration: none;
+      transition: color 0.3s ease, transform 0.3s ease;
+    }
+    #main-title a:hover {
+      color: var(--button-bg-color);
+      transform: scale(1.05);
+    }
+
+    label {
+      font-weight: 600;
+      display: block;
+      margin: 10px 0 5px;
+      position: relative; /* для tooltip */
+    }
+
+    /* Поле ввода (textarea) */
+    textarea {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 10px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      background-color: var(--secondary-bg-color);
+      color: var(--text-color);
+      resize: vertical;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    textarea:hover {
+      transform: scale(1.03);
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Кнопки */
+    button {
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    button:hover {
+      background-color: var(--button-bg-hover);
+    }
+
+    .custom-file-button,
+    .main-action-button {
+      width: 100%;
+      background-color: var(--button-bg-color);
+      color: #ffffff;
+      padding: 10px;
+      border-radius: 8px;
+      font-size: 1rem;
+      border: none;
+      opacity: 0.7;
+      text-align: center;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s;
+      margin-bottom: 10px;
+    }
+    .custom-file-button:hover,
+    .main-action-button:hover {
+      opacity: 1;
+      transform: scale(1.03);
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .file-input-container {
+      margin-bottom: 10px;
+      position: relative;
+    }
+
+    #file-input {
+      position: absolute;
+      opacity: 0;
+      width: 0;
+      height: 0;
+      z-index: -1;
+    }
+
+    #file-chosen {
+      display: block;
+      margin-top: 5px;
+      font-size: 0.9rem;
+      font-style: italic;
+      opacity: 0.8;
+    }
+
+    .output {
+      margin-top: 20px;
+    }
+
+    /* Блоки конфигурации */
+    .config-container {
+      background-color: var(--secondary-bg-color);
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .config-container:hover {
+      transform: scale(1.01);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+
+    .config-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .config-header span {
+      font-weight: 600;
+    }
+
+    .config-buttons button {
+      margin-left: 10px;
+      background-color: var(--button-bg-color);
+      color: #ffffff;
+      border: none;
+      border-radius: 8px;
+      padding: 10px;
+      font-size: 1rem;
+      opacity: 0.7;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s;
+    }
+    .config-buttons button:hover {
+      opacity: 1;
+      transform: scale(1.03);
+      box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+    }
+
+    .config-code {
+      background-color: var(--code-bg-color);
+      color: var(--code-text-color);
+      padding: 10px;
+      border-radius: 8px;
+      font-family: monospace;
+      white-space: pre-wrap;
+      display: none;
+    }
+
+    /* Тосты */
+    #toast-container {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .toast {
+      color: #fff;
+      padding: 10px 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      font-weight: 500;
+      min-width: 250px;
+      position: relative;
+      cursor: pointer;
+      opacity: 0;
+      transform: translateY(-20px);
+      animation: toast-in 0.5s forwards;
+    }
+    @keyframes toast-in {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    @keyframes toast-out {
+      to {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+    }
+    .toast .close-btn {
+      position: absolute;
+      top: 5px;
+      right: 8px;
+      background: none;
+      border: none;
+      color: #fff;
+      font-size: 1rem;
+      cursor: pointer;
+      opacity: 0.8;
+    }
+    .toast .close-btn:hover {
+      opacity: 1;
+    }
+
+    .controls-container {
+      text-align: center;
+      padding: 20px;
+    }
+    .theme-toggle-button,
+    .language-toggle-button {
+      width: auto;
+      margin: 0 10px;
+      padding: 10px 20px;
+      display: inline-block;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .theme-toggle-button:hover,
+    .language-toggle-button:hover {
+      transform: scale(1.03);
+      box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+    }
+
+    /* Tooltip */
+    [data-tooltip] {
+      position: relative;
+      cursor: help;
+    }
+    [data-tooltip]:hover::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      bottom: 125%;
+      left: 0;
+      background-color: var(--secondary-bg-color);
+      color: var(--text-color);
+      padding: 6px 8px;
+      border-radius: 6px;
+      white-space: pre-wrap;
+      font-size: 0.85rem;
+      opacity: 1;
+      transform: translateY(0);
+      transition: all 0.2s ease;
+      z-index: 9999;
+    }
+    [data-tooltip]::after {
+      opacity: 0;
+      transform: translateY(10px);
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Заголовок теперь содержит ссылку с анимацией при наведении -->
+    <h1 id="main-title">
+      <a href="https://getblancvpn.com" target="_blank">
+        XKeen Config Generator by BlancVPN
+      </a>
+    </h1>
+
+    <label id="label-base64" for="base64-input">Вставьте Base64-код или VLESS ссылку:</label>
+    <textarea id="base64-input" placeholder="Вставьте Base64-код или VLESS ссылку" rows="6"></textarea>
+
+    <label id="label-file" for="file-input">Или загрузите BlancVPN.txt файл:</label>
+    <div class="file-input-container">
+      <input 
+        type="file" 
+        id="file-input" 
+        accept=".txt" 
+        onchange="handleFileUpload(event)"
+      >
+      <label for="file-input" class="custom-file-button" id="file-button">Выбрать файл</label>
+      <span id="file-chosen">Файл не выбран</span>
+    </div>
+
+    <!-- Кнопка "Сгенерировать конфигурацию" той же ширины, что и "Выбрать файл" -->
+    <button id="generate-button" class="main-action-button" onclick="processInput()">
+      Сгенерировать конфигурацию
+    </button>
+
+    <div id="output" class="output"></div>
+  </div>
+
+  <div class="controls-container">
+    <button class="theme-toggle-button" onclick="toggleTheme()" id="theme-toggle">Переключить тему</button>
+    <button class="language-toggle-button" onclick="toggleLanguage()" id="lang-toggle">English</button>
+  </div>
+
+  <!-- Контейнер для всплывающих уведомлений (toast) -->
+  <div id="toast-container"></div>
+
+  <script>
+    /* =================================================
+       ЯЗЫКИ (i18n)
+    ================================================= */
+    const i18n = {
+      en: {
+        mainTitle: "XKeen Config Generator by BlancVPN",
+        labelBase64: "Insert Base64 code or VLESS link:",
+        labelFile: "Or upload BlancVPN.txt file:",
+        placeholderBase64: "Paste Base64 code or VLESS link here",
+        fileButton: "Choose File",
+        fileNotChosen: "No file chosen",
+        generateButton: "Generate Config",
+        themeToggle: "Toggle Theme",
+        languageToggle: "Русский",
+        errorNoInput: "Please provide Base64 code or VLESS link.",
+        errorBase64Chars:
+          "It looks like the string contains invalid Base64 characters.\nAllowed: A-Z, a-z, 0-9, +, /, =.",
+        errorBase64Decode:
+          "Error decoding Base64.\nMaybe missing padding ('==') or invalid characters.",
+        errorBase64NoVless:
+          "No vless:// link found in decoded Base64.\nCheck your code or try another.",
+        errorNoVlessPrefix: "String does not start with 'vless://'.",
+        errorInvalidVlessURL: "Could not parse the link as a valid URL.",
+        errorNoHost: "No hostname in VLESS link.",
+        errorNoPort: "No port found after hostname:port.",
+        errorNoID: "No user ID found in VLESS link.",
+        errorVlessGeneric: "Make sure the link is correct.",
+        errorBase64Header: "Base64 Error:",
+        errorVlessShort: "VLESS link error:",
+        showConfig: "Show Config",
+        copyConfig: "Copy",
+        downloadConfig: "Download",
+        copyAlert: "Config copied to clipboard!",
+        tooltipBase64: "Paste a valid Base64 string or a direct VLESS link.\nExample: vless://uuid@host:443",
+        tooltipFile: "Upload a text file containing Base64 or VLESS links.",
+        tooltipGenerate: "Click to decode and generate the config.",
+      },
+      ru: {
+        mainTitle: "XKeen Config Generator by BlancVPN",
+        labelBase64: "Вставьте Base64-код или VLESS ссылку:",
+        labelFile: "Или загрузите BlancVPN.txt файл:",
+        placeholderBase64: "Вставьте Base64-код или VLESS ссылку",
+        fileButton: "Выбрать файл",
+        fileNotChosen: "Файл не выбран",
+        generateButton: "Сгенерировать конфигурацию",
+        themeToggle: "Переключить тему",
+        languageToggle: "English",
+        errorNoInput: "Введите Base64-код или VLESS ссылку.",
+        errorBase64Chars:
+          "Похоже, что строка содержит недопустимые символы для Base64.\nРазрешённые: A-Z, a-z, 0-9, +, /, =.",
+        errorBase64Decode:
+          "Ошибка при декодировании Base64.\nВозможно, отсутствует padding ('==') или есть неверные символы.",
+        errorBase64NoVless:
+          "В декодированном Base64 не найдено ни одной ссылки vless://.\nПроверьте код или попробуйте другой.",
+        errorNoVlessPrefix: "Строка не начинается с 'vless://'.",
+        errorInvalidVlessURL: "Невозможно разобрать ссылку как URL.",
+        errorNoHost: "Не указан хост в VLESS ссылке.",
+        errorNoPort: "Не указан порт (hostname:port).",
+        errorNoID: "Не указан ID пользователя в VLESS ссылке.",
+        errorVlessGeneric: "Убедитесь, что ссылка корректна.",
+        errorBase64Header: "Ошибка Base64:",
+        errorVlessShort: "Ошибка VLESS ссылки:",
+        showConfig: "Показать конфигурацию",
+        copyConfig: "Копировать",
+        downloadConfig: "Скачать",
+        copyAlert: "Конфигурация скопирована!",
+        tooltipBase64: "Вставьте корректную Base64-строку или VLESS ссылку.\nНапр: vless://uuid@host:443",
+        tooltipFile: "Загрузите .txt файл, содержащий Base64 или VLESS ссылки.",
+        tooltipGenerate: "Нажмите, чтобы декодировать и сгенерировать конфигурацию.",
+      }
+    };
+
+    let currentLang = "ru";
+
+    document.addEventListener("DOMContentLoaded", () => {
+      applyTranslations(currentLang);
+    });
+
+    function applyTranslations(lang) {
+      document.getElementById("main-title").querySelector('a').textContent = i18n[lang].mainTitle;
+      document.getElementById("label-base64").textContent    = i18n[lang].labelBase64;
+      document.getElementById("label-file").textContent      = i18n[lang].labelFile;
+      document.getElementById("base64-input").placeholder    = i18n[lang].placeholderBase64;
+
+      document.getElementById("file-button").textContent     = i18n[lang].fileButton;
+      const fileChosenSpan = document.getElementById("file-chosen");
+      if (
+        fileChosenSpan.textContent === i18n["ru"].fileNotChosen ||
+        fileChosenSpan.textContent === i18n["en"].fileNotChosen
+      ) {
+        fileChosenSpan.textContent = i18n[lang].fileNotChosen;
+      }
+
+      document.getElementById("generate-button").textContent = i18n[lang].generateButton;
+      document.getElementById("theme-toggle").textContent    = i18n[lang].themeToggle;
+      document.getElementById("lang-toggle").textContent     = i18n[lang].languageToggle;
+
+      // Подсказки (tooltips)
+      document.getElementById("label-base64").setAttribute("data-tooltip", i18n[lang].tooltipBase64);
+      document.getElementById("label-file").setAttribute("data-tooltip", i18n[lang].tooltipFile);
+      document.getElementById("generate-button").setAttribute("data-tooltip", i18n[lang].tooltipGenerate);
+
+      retranslateConfigButtons();
+    }
+
+    function retranslateConfigButtons() {
+      const configContainers = document.querySelectorAll('.config-container');
+      configContainers.forEach(container => {
+        const configButtons = container.querySelector('.config-buttons');
+        if (configButtons) {
+          const buttons = configButtons.querySelectorAll('button');
+          // [0] -> Show/Показать
+          // [1] -> Copy/Копировать
+          // [2] -> Download/Скачать
+          buttons[0].textContent = i18n[currentLang].showConfig;
+          buttons[1].textContent = i18n[currentLang].copyConfig;
+          buttons[2].textContent = i18n[currentLang].downloadConfig;
+        }
+      });
+    }
+
+    function toggleLanguage() {
+      currentLang = (currentLang === "ru") ? "en" : "ru";
+      applyTranslations(currentLang);
+    }
+
+    function toggleTheme() {
+      document.documentElement.classList.toggle('light');
+    }
+
+    /* TOAST */
+    function showToast(message, type = "error", duration = 5000) {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+
+      if (type === "success") {
+        toast.style.backgroundColor = "var(--success-color)";
+      } else {
+        toast.style.backgroundColor = "var(--warning-color)";
+      }
+
+      const closeBtn = document.createElement('button');
+      closeBtn.className = 'close-btn';
+      closeBtn.innerHTML = '×';
+      closeBtn.onclick = () => removeToast(toast);
+
+      toast.innerHTML = `<p style="margin:0;white-space:pre-wrap;">${message}</p>`;
+      toast.appendChild(closeBtn);
+
+      container.appendChild(toast);
+
+      setTimeout(() => {
+        removeToast(toast);
+      }, duration);
+    }
+
+    function removeToast(toast) {
+      toast.style.animation = 'toast-out 0.5s forwards';
+      setTimeout(() => {
+        toast.remove();
+      }, 500);
+    }
+
+    /* Загрузка файла */
+    function handleFileUpload(event) {
+      const file = event.target.files[0];
+      const fileChosen = document.getElementById('file-chosen');
+
+      if (file) {
+        fileChosen.textContent = file.name;
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          document.getElementById('base64-input').value = e.target.result;
+        };
+        reader.readAsText(file);
+      } else {
+        fileChosen.textContent = i18n[currentLang].fileNotChosen;
+      }
+    }
+
+    /* Декодирование Base64 */
+    function decodeBase64(base64) {
+      const base64regex = /^[A-Za-z0-9+/=]+$/;
+      if (!base64regex.test(base64.replace(/\s/g, ''))) {
+        throw new Error(i18n[currentLang].errorBase64Chars);
+      }
+      try {
+        return decodeURIComponent(escape(atob(base64)));
+      } catch (error) {
+        throw new Error(i18n[currentLang].errorBase64Decode);
+      }
+    }
+
+    /* Основная логика (processInput) */
+    function processInput() {
+      const input = document.getElementById('base64-input').value.trim();
+      const outputContainer = document.getElementById('output');
+
+      outputContainer.innerHTML = '';
+
+      if (!input) {
+        showToast(i18n[currentLang].errorNoInput, "error");
+        return;
+      }
+
+      // Если напрямую VLESS-ссылка
+      if (input.startsWith('vless://')) {
+        try {
+          generateConfigFromVlessLink(input, outputContainer, 0);
+        } catch (error) {
+          showToast(
+            i18n[currentLang].errorVlessShort + " " + error.message +
+            "\n" + i18n[currentLang].errorVlessGeneric,
+            "error"
+          );
+        }
+        return;
+      }
+
+      // Иначе считаем, что это Base64
+      try {
+        const decodedText = decodeBase64(input);
+        const lines = decodedText
+          .split('\n')
+          .map(line => line.trim())
+          .filter(line => line.startsWith('vless://'));
+
+        if (lines.length === 0) {
+          throw new Error(i18n[currentLang].errorBase64NoVless);
+        }
+
+        lines.forEach((line, index) => {
+          try {
+            generateConfigFromVlessLink(line, outputContainer, index);
+          } catch (error) {
+            showToast(`${i18n[currentLang].errorVlessShort} #${index + 1}: ${error.message}`, "error");
+          }
+        });
+
+      } catch (error) {
+        showToast(`${i18n[currentLang].errorBase64Header} ${error.message}`, "error");
+      }
+    }
+
+    /* Генерация конфигурации из VLESS */
+    function generateConfigFromVlessLink(link, outputContainer, index) {
+      if (!link.startsWith('vless://')) {
+        throw new Error(i18n[currentLang].errorNoVlessPrefix);
+      }
+      const [rawUrl, rawLocation] = link.split('#');
+      let url;
+      try {
+        url = new URL(rawUrl);
+      } catch (e) {
+        throw new Error(i18n[currentLang].errorInvalidVlessURL);
+      }
+
+      const address = url.hostname;
+      const port = url.port;
+      const id = url.username;
+
+      if (!address) {
+        throw new Error(i18n[currentLang].errorNoHost);
+      }
+      if (!port) {
+        throw new Error(i18n[currentLang].errorNoPort);
+      }
+      if (!id) {
+        throw new Error(i18n[currentLang].errorNoID);
+      }
+
+      let locationName = rawLocation 
+        ? decodeURIComponent(rawLocation) 
+        : `Location ${index + 1}`;
+      locationName = `#${index + 1} ${locationName}`;
+
+      const configContainer = document.createElement('div');
+      configContainer.className = 'config-container';
+
+      const configHeader = document.createElement('div');
+      configHeader.className = 'config-header';
+      configHeader.innerHTML = `
+        <span>${locationName}</span>
+        <div class="config-buttons">
+          <button onclick="toggleCode(this)">${i18n[currentLang].showConfig}</button>
+          <button onclick="copyToClipboard(this)">${i18n[currentLang].copyConfig}</button>
+          <button onclick="saveConfig(this)">${i18n[currentLang].downloadConfig}</button>
+        </div>
+      `;
+
+      const config = {
+        "outbounds": [
+          {
+            "tag": "vless-reality",
+            "protocol": "vless",
+            "settings": {
+              "vnext": [
+                {
+                  "address": address,
+                  "port": parseInt(port, 10),
+                  "users": [
+                    {
+                      "id": id,
+                      "flow": "",
+                      "encryption": "none",
+                      "level": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            "streamSettings": {
+              "network": "tcp",
+              "security": "tls",
+              "tlsSettings": {
+                "alpn": [
+                  "h2"
+                ],
+                "fingerprint": "",
+                "serverName": "",
+                "allowInsecure": true,
+                "show": false
+              }
+            }
+          },
+          {
+            "tag": "direct",
+            "protocol": "freedom"
+          },
+          {
+            "tag": "block",
+            "protocol": "blackhole",
+            "settings": {
+              "response": {
+                "type": "http"
+              }
+            }
+          }
+        ]
+      };
+
+      const configCode = document.createElement('pre');
+      configCode.className = 'config-code';
+      configCode.textContent = JSON.stringify(config, null, 4);
+
+      configContainer.appendChild(configHeader);
+      configContainer.appendChild(configCode);
+      outputContainer.appendChild(configContainer);
+    }
+
+    function toggleCode(button) {
+      const codeBlock = button.closest('.config-container').querySelector('.config-code');
+      codeBlock.style.display = (codeBlock.style.display === 'block') ? 'none' : 'block';
+    }
+
+    function copyToClipboard(button) {
+      const codeBlock = button.closest('.config-container').querySelector('.config-code');
+      navigator.clipboard.writeText(codeBlock.textContent);
+      showToast(i18n[currentLang].copyAlert, "success", 3000);
+    }
+
+    function saveConfig(button) {
+      const codeBlock = button.closest('.config-container').querySelector('.config-code').textContent;
+      const blob = new Blob([codeBlock], { type: 'application/json' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `04_outbounds.json`;
+      link.click();
+    }
+  </script>
+</body>
+</html>
